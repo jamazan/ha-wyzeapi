@@ -100,7 +100,6 @@ class WyzeVacuum(StateVacuumEntity):
         | VacuumEntityFeature.STOP
         | VacuumEntityFeature.RETURN_HOME
         | VacuumEntityFeature.FAN_SPEED
-        | VacuumEntityFeature.BATTERY
         | VacuumEntityFeature.STATE
         | VacuumEntityFeature.SEND_COMMAND
     )
@@ -152,11 +151,6 @@ class WyzeVacuum(StateVacuumEntity):
         return ACTIVITY_BY_MODE.get(self._vacuum.mode, VacuumActivity.IDLE)
 
     @property
-    def battery_level(self) -> int | None:
-        """Return the battery level of the vacuum."""
-        return self._vacuum.battery
-
-    @property
     def fan_speed(self) -> str | None:
         """Return the current suction level."""
         if self._vacuum.suction_level is None:
@@ -165,8 +159,13 @@ class WyzeVacuum(StateVacuumEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the consumable life and last-clean detail."""
+        """Return the battery, consumable life and last-clean detail.
+
+        Home Assistant removed vacuum battery support from the entity, so the
+        level is exposed here and as a dedicated battery sensor.
+        """
         return {
+            "battery_level": self._vacuum.battery,
             "rooms": sorted(self._rooms),
             "fault_code": self._vacuum.fault_code,
             "fault": self._vacuum.fault.description if self._vacuum.fault else None,

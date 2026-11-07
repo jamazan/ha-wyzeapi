@@ -106,7 +106,6 @@ def test_supported_features_cover_the_venus_command_set(entity):
         VacuumEntityFeature.STOP,
         VacuumEntityFeature.RETURN_HOME,
         VacuumEntityFeature.FAN_SPEED,
-        VacuumEntityFeature.BATTERY,
         VacuumEntityFeature.STATE,
     ):
         assert entity.supported_features & feature
@@ -164,7 +163,7 @@ def test_an_undocumented_fault_code_is_not_an_error(entity, vacuum):
 
 
 def test_battery_and_fan_speed_are_reported(entity):
-    assert entity.battery_level == 100
+    assert entity.extra_state_attributes["battery_level"] == 100
     assert entity.fan_speed == "Quiet"
     assert entity.fan_speed_list == ["Quiet", "Standard", "Strong"]
 
@@ -198,7 +197,7 @@ def test_a_sleeping_vacuum_stays_unavailable_though_its_state_still_reads(
     vacuum.available = False
 
     assert entity.available is False
-    assert entity.battery_level == 100
+    assert entity.extra_state_attributes["battery_level"] == 100
     assert entity.activity is VacuumActivity.DOCKED
 
 

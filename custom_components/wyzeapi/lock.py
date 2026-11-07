@@ -22,7 +22,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers import device_registry as dr
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import CONF_CLIENT, DOMAIN, IOT3_MODELS, LOCK_UPDATED
+from .const import CONF_CLIENT, DOMAIN, LOCK_UPDATED
 from .token_manager import token_exception_handler
 
 _LOGGER = logging.getLogger(__name__)

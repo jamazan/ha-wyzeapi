@@ -91,3 +91,26 @@ async def test_sensors_attach_to_the_vacuum_device(service, vacuum):
 
     assert sensor.device_info["identifiers"] == {(DOMAIN, vacuum.mac)}
     assert sensor.device_info["name"] == "Diogee"
+
+
+@pytest.mark.asyncio
+async def test_battery_sensor_reports_and_refreshes():
+    """The battery sensor reads the vacuum's level and refreshes through the service."""
+    from custom_components.wyzeapi.sensor import WyzeVacuumBatterySensor
+
+    vacuum = SimpleNamespace(
+        mac="JA_RO2_ABCDEF1234567890",
+        nickname="Diogee",
+        product_model="JA_RO2",
+        battery=80,
+    )
+    refreshed = SimpleNamespace(**{**vacuum.__dict__, "battery": 55})
+    service = SimpleNamespace(update=AsyncMock(return_value=refreshed))
+
+    sensor = WyzeVacuumBatterySensor(service, vacuum)
+    assert sensor.native_value == 80
+    assert sensor.unique_id == "JA_RO2_ABCDEF1234567890-battery"
+
+    await sensor.async_update()
+    assert sensor.native_value == 55
+    service.update.assert_awaited_once_with(vacuum)

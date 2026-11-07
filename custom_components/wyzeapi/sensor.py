@@ -42,7 +42,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     AIR_PURIFIER_UPDATED,
-    IOT3_MODELS,
     CAMERA_UPDATED,
     CONF_CLIENT,
     DOMAIN,
@@ -137,6 +136,7 @@ async def async_setup_entry(
     for vacuum in await vacuum_service.get_vacuums():
         sensors.extend(
             [
+                WyzeVacuumBatterySensor(vacuum_service, vacuum),
                 WyzeVacuumLastCleanSizeSensor(vacuum_service, vacuum),
                 WyzeVacuumLastCleanDurationSensor(vacuum_service, vacuum),
                 WyzeVacuumLastCleanFinishedSensor(vacuum_service, vacuum),
@@ -860,6 +860,46 @@ class WyzeIot3FirmwareSensor(_WyzeIot3SensorBase):
     @property
     def native_value(self):
         return (self.coordinator.data or {}).get("firmware_ver")
+
+
+class WyzeVacuumBatterySensor(SensorEntity):
+    """Battery level of a Wyze robot vacuum.
+
+    Home Assistant no longer supports battery on the vacuum entity itself.
+    """
+
+    _attr_attribution = ATTRIBUTION
+    _attr_has_entity_name = True
+    _attr_should_poll = True
+    _attr_device_class = SensorDeviceClass.BATTERY
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_name = "Battery"
+
+    def __init__(self, vacuum_service: VacuumService, vacuum: Vacuum) -> None:
+        """Initialize the sensor."""
+        self._vacuum_service = vacuum_service
+        self._vacuum = vacuum
+        self._attr_unique_id = f"{vacuum.mac}-battery"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information about this entity."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._vacuum.mac)},
+            name=self._vacuum.nickname,
+            manufacturer="WyzeLabs",
+            model=self._vacuum.product_model,
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return the battery percentage."""
+        return self._vacuum.battery
+
+    async def async_update(self) -> None:
+        """Refresh the vacuum state."""
+        self._vacuum = await self._vacuum_service.update(self._vacuum)
 
 
 class WyzeVacuumLastCleanSensor(SensorEntity):
