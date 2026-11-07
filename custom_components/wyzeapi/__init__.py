@@ -46,6 +46,7 @@ PLATFORMS = [
     "number",
     "button",
     "camera",
+    "vacuum",
 ]  # Fixme: Re add scene
 _LOGGER = logging.getLogger(__name__)
 
