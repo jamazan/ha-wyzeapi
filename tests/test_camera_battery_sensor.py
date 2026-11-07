@@ -37,6 +37,7 @@ async def _setup_with_cameras(cameras: list[SimpleNamespace]) -> list:
         irrigation_service=_service(get_irrigations=AsyncMock(return_value=[])),
         air_purifier_service=_service(get_air_purifiers=AsyncMock(return_value=[])),
         vacuum_service=_service(get_vacuums=AsyncMock(return_value=[])),
+        scale_service=_service(get_scales=AsyncMock(return_value=[])),
     )
     config_entry = SimpleNamespace(entry_id="entry-id")
     hass = SimpleNamespace(
