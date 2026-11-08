@@ -83,7 +83,11 @@ def _sdp_summary(sdp: str) -> str:
         media.append(f"{kind}:{direction}:{','.join(codecs) or 'none'}")
 
     candidate_types = sorted(
-        set(re.findall(r"\ba=candidate:[^\r\n]*?\btyp\s+(host|srflx|prflx|relay)\b", sdp))
+        set(
+            re.findall(
+                r"\ba=candidate:[^\r\n]*?\btyp\s+(host|srflx|prflx|relay)\b", sdp
+            )
+        )
     )
     return "media=%s candidate_types=%s" % (
         ";".join(media) or "none",
@@ -119,6 +123,7 @@ async def _prefetch_camera_config(
     timeout: float = CAMERA_SETUP_TIMEOUT,
 ) -> None:
     """Prefetch one camera's WebRTC config without blocking its peers."""
+
     async def fetch() -> None:
         try:
             await asyncio.wait_for(camera.config_fetch(), timeout=timeout)
@@ -374,6 +379,8 @@ class WyzeCamera(CameraEntity):
 
         # Preserve the order while avoiding duplicate downloads.
         urls = list(dict.fromkeys(urls))
+        # Snapshot URLs come from the Wyze API response; only fetch https ones.
+        urls = [u for u in urls if urlparse(u).scheme == "https"]
         if not urls:
             self._snapshot_backoff_until = now + SNAPSHOT_FAILURE_BACKOFF
             _LOGGER.debug("No Wyze snapshot URL available for camera %s", self.name)
@@ -424,7 +431,6 @@ class WyzeCamera(CameraEntity):
 
         ice_servers = []
         for server in config.get("ice_servers", []):
-            _LOGGER.debug("Adding ICE server for camera %s: %s", self.name, server)
             ice_servers.append(
                 RTCIceServer.from_dict(
                     {
@@ -435,7 +441,8 @@ class WyzeCamera(CameraEntity):
                 )
             )
 
-        _LOGGER.debug("ICE servers for camera %s: %s", self.name, ice_servers)
+        # TURN usernames/credentials are not logged.
+        _LOGGER.debug("Using %d ICE servers for camera %s", len(ice_servers), self.name)
         configuration = RTCConfiguration(ice_servers=ice_servers)
         # Wyze cameras publish audio/video only.  Requesting a data channel
         # makes the HA frontend add an `m=application` section to the offer;
@@ -644,7 +651,7 @@ class WyzeCameraWebRTCSession:
             self.camera.name,
             self.session_id,
         )
-        _LOGGER.warning(
+        _LOGGER.info(
             "Wyze WebRTC websocket connected: camera=%s model=%s elapsed=%.2fs host=%s",
             self.camera.name,
             self.camera.model,
@@ -866,9 +873,15 @@ class WyzeCameraWebRTCSession:
                             self.camera.name,
                             self.camera.model,
                             data.get("messageType"),
-                            status.get("statusCode") if isinstance(status, dict) else None,
-                            status.get("errorType") if isinstance(status, dict) else None,
-                            status.get("description") if isinstance(status, dict) else None,
+                            status.get("statusCode")
+                            if isinstance(status, dict)
+                            else None,
+                            status.get("errorType")
+                            if isinstance(status, dict)
+                            else None,
+                            status.get("description")
+                            if isinstance(status, dict)
+                            else None,
                         )
                     case other:
                         _LOGGER.debug(
