@@ -15,8 +15,8 @@
     "custom_components.wyzeapi"
   ],
   "requirements": [
-    "wyzeapy @ git+https://github.com/jamazan/wyzeapy.git@984f78dcf42c9e8baf7a8ee8c11152960416f120",
+    "wyzeapy @ https://github.com/jamazan/wyzeapy/releases/download/v0.8.1.post1/wyzeapy-0.8.1.post1-py3-none-any.whl#sha256=743373c14791334c55efb3d3ceef647b521abfeb87c27900dae956fc2d516db0",
     "websockets"
   ],
-  "version": "0.1.41-jamazan.1"
+  "version": "0.1.41-jamazan.2"
 }

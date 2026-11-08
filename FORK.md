@@ -9,8 +9,9 @@ Based on upstream v0.1.41 (Apache-2.0). Merged open upstream PRs:
 | #895 | Wyze Scale sensors | sensor additions re-applied cleanly on top of #928/#907; missing asyncio markers added to its tests |
 | #936 | WebRTC signaling / snapshot reliability | its third-party `wyzeapy` git pin (diogormendes fork, commit not found) was NOT taken |
 
-Library: `wyzeapy` fork (jamazan/wyzeapy) = wyzeapy main (0.8.1) + wyzeapy #325 (vacuum) + #311 (scale).
-The manifest pins it to one full commit SHA.
+Library: `wyzeapy` fork (jamazan/wyzeapy, commit c3c1e50) = wyzeapy main (0.8.1) + wyzeapy #325 (vacuum) + #311 (scale).
+The manifest installs it from the jamazan/wyzeapy v0.8.1.post1 release wheel, pinned by SHA-256
+(no git needed on the HA host; a modified file fails to install).
 
 Local hardening: snapshot URLs must be https; TURN credentials no longer written to debug logs;
 per-stream WebRTC "connected" log lowered from WARNING to INFO.
